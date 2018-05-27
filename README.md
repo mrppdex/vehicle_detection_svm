@@ -1,8 +1,8 @@
 |File|Description|
 |-|-|
-|clf_scaler.py| Fits classifers and scalers. Saves a pickle with them to `clf_scaler.p`|
+|clf_scaler.py| Fits classifiers and scalers. Saves a pickle with them to `clf_scaler.p`|
 |vehdet.py| Processes the frames. Uses fitted `clf_scaler.p`|
-|clf_scaler.p| Pickle with a list of {classifer, scaler} pairs|
+|clf_scaler.p| Pickle with a list of {classifier, scaler} pairs|
 
 
 # Vehicle Detection using SVM Classifier
@@ -23,7 +23,7 @@
 
 ## Project
 
-The goal of this project is to write a vehicle detection pipelane, using Support Vector Machine (SVM) Classifier, which consists of the following steps:
+The goal of this project is to write a vehicle detection pipeline, using Support Vector Machine (SVM) Classifier, which consists of the following steps:
 
 - Convert color space,
 - Calculate HOG features,
@@ -39,7 +39,7 @@ The goal of this project is to write a vehicle detection pipelane, using Support
 
 I use Mohan Khartik's hyperparameters from [his blog on Medium](https://medium.com/@mohankarthik/feature-extraction-for-vehicle-detection-using-hog-d99354a84d10). I had built a cross validation program that uses `GridSearchCV` function from `sklearn` library to find optimal parameters, but every step of cross validation requires image transformation, fitting scaler and classifier. It's more that my laptop can handle in a reasonable amount of time. It requires a lot of processing speed of the CPU. GPU is not used to fit LinearSVC classifier.
 
-I'm converting images to HSV Color Space, use S and V layers to extract HOG feautures and ALL layers to extract histogram features for the region of interest.
+I'm converting images to HSV Color Space, use S and V layers to extract HOG features and ALL layers to extract histogram features for the region of interest.
 
 ## Calculate HOG features.
 
@@ -66,7 +66,7 @@ vec, _ = np.histogram(img[:, :, ch].ravel(), bins=bins, normed=True)
 
 ## Fit the Classifier and the Scaler.
 
-I use Linear Support Vector Machine Classifer `LinearSVC` from the `sklearn` library. I use default parameters (`C=1.0`). I have also tested `GaussianNB` and `SVC` with `rbf` kernel. I got the following scores:
+I use Linear Support Vector Machine Classifier `LinearSVC` from the `sklearn` library. I use default parameters (`C=1.0`). I have also tested `GaussianNB` and `SVC` with `rbf` kernel. I got the following scores:
 
 |Classifier|Window 1| Window 2| Window 3|
 |-|-|-|-|
@@ -74,7 +74,7 @@ I use Linear Support Vector Machine Classifer `LinearSVC` from the `sklearn` lib
 |`SVC` (`rbf`)|98.61|98.82|98.72|
 |`LinearSVC`|97.90|98.21|98.11|
 
-Even though the best scores were achieved by the SVC classifer with 'rbf' kernel, I have decided to use LinearSVC, because it is much faster and smaller (the size of the pickle with SVC(rbf) is over 40MB, LinearSVC is only 70KB, and LinearSVC pipeline is 6 times faster on my laptop then SVC(rbf)).
+Even though the best scores were achieved by the SVC classifier with 'rbf' kernel, I have decided to use LinearSVC, because it is much faster and smaller (the size of the pickle with SVC(rbf) is over 40MB, LinearSVC is only 70KB, and LinearSVC pipeline is 6 times faster on my laptop then SVC(rbf)).
 
 I augmented the training data by adding the flipped versions of images. I use `StratifiedShuffleSplit` to ensure even ratio of vehicles and non-vehicles data in the training set.
 
@@ -86,7 +86,7 @@ I fit three classifiers with three different sliding window sizes:
 |Classifier 2| (8, 8)|(4, 4)| 32x32|
 |Classifier 3| (8, 8)|(5, 5)| 40x40|
 
-Original training images have shape (64, 64, 3), so I have to rescale it before I fit  classifiers. I also fit three scalers for the corresponding classifers using `StandardScaler` from `sklearn` library.
+Original training images have shape (64, 64, 3), so I have to rescale it before I fit  classifiers. I also fit three scalers for the corresponding classifiers using `StandardScaler` from `sklearn` library.
 
 Code contained in `clf_scaler.py`:
 - Opens all training data,
@@ -94,8 +94,8 @@ Code contained in `clf_scaler.py`:
 - Extracts Histogram feature vectors,
 - Combine both feature vectors into one,
 - Fits the scaler with a list of those vectors and transforms them,
-- Fits the classifer with scaled vectors,
-- Saves all classifers and scalers to `clf_scaler.p` pickle file.
+- Fits the classifier with scaled vectors,
+- Saves all classifiers and scalers to `clf_scaler.p` pickle file.
 
 ## Define the region of interest.
 
@@ -117,18 +117,18 @@ And the ROI:
 
 I use a list of `steps` with steps in `x` and `y` direction for all fitted classifiers. Smaller steps improve the quality of the heat map, but also slow down the whole program:
 
-I slide the smallest classifier window through the top of the ROI, medium classifier window throuth the middle and the largest window through the bottom of the ROI.
+I slide the smallest classifier window through the top of the ROI, medium classifier window through the middle and the largest window through the bottom of the ROI.
 
 ![sliding windows][sliding]
 
 
-From every window I extract the hog features from the calculated hog map, extract the histogram features and feed it into the classifer fitted with vectors of appropriate size:
+From every window I extract the hog features from the calculated hog map, extract the histogram features and feed it into the classifier fitted with vectors of appropriate size:
 
     window 0, feature vector shape=(352,)
     window 1, feature vector shape=(672,)
     window 2, feature vector shape=(1120,)
 
-Every time classifer predicts the vector to belong to **vehicles** it adds the window to the list of the last 6 frames and uses all those positive windows to update the heat map.
+Every time classifier predicts the vector to belong to **vehicles** it adds the window to the list of the last 6 frames and uses all those positive windows to update the heat map.
 
 ## Draw rectangles around around detected vehicles.
 
@@ -142,7 +142,7 @@ Now the Heat Map look more like that:
 
 ![heatmap after][heat_post]
 
-Filtered Heat Map is used as a parameter of the `label` function from `scipy` library. That function splits the heatmap into separate regions which look like:
+Filtered Heat Map is used as a parameter of the `label` function from `scipy` library. That function splits the heat map into separate regions which look like:
 
 ![labels][label_map]
 
@@ -150,4 +150,4 @@ If everything goes right the output image looks like:
 ![boxes][label_boxes]
 
 ## Discussion.
-This implementation is very fast and could not be applied in a real world. Using SVC with rbf kernel would imporve the result but it would also render it unusable. This pipeline processes 6 frames of the video clip every second. Trainig data more suitable to the testing conditions would also improve the classifer scores. More trainig data, using DNNs to find the bounding boxes and faster implementation would be enough to make the pipeline usable in the real world.
+This implementation is very fast and could not be applied in a real world. Using SVC with rbf kernel would improve the result but it would also render it unusable. This pipeline processes 6 frames of the video clip every second. Training data more suitable to the testing conditions would also improve the classifier scores. More training data, using DNNs to find the bounding boxes and faster implementation would be enough to make the pipeline usable in the real world.
