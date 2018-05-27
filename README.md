@@ -67,17 +67,18 @@ vec, _ = np.histogram(img[:, :, ch].ravel(), bins=bins, normed=True)
 ## Fit the Classifier and the Scaler.
 
 I use Linear Support Vector Machine Classifer `LinearSVC` from the `sklearn` library. I use default parameters (`C=1.0`). I have also tested `GaussianNB` and `SVC` with `rbf` kernel. I got the following scores:
+
 |Classifier|Window 1| Window 2| Window 3|
 |-|-|-|-|
 |`GaussianNB`| 79.65| 80.12| 81.60|
 |`SVC` (`rbf`)|98.61|98.82|98.72|
 |`LinearSVC`|97.90|98.21|98.11|
 
-Even though the best scores were achieved by the SVC classifer with 'rbf' kernel, I have decided to use LinearSVC, because it is much faster and the smaller (the size of the pickle with SVC(rbf) is over 40MB, LinearSVC is only 70KB, and LinearSVC pipeline is 6 times faster on my laptop then SVC(rbf)).
+Even though the best scores were achieved by the SVC classifer with 'rbf' kernel, I have decided to use LinearSVC, because it is much faster and smaller (the size of the pickle with SVC(rbf) is over 40MB, LinearSVC is only 70KB, and LinearSVC pipeline is 6 times faster on my laptop then SVC(rbf)).
 
-I augment the training data by adding the flipped versions of images. I use `StratifiedShuffleSplit` to ensure even ratio of vehicles and non-vehicles data in the training set.
+I augmented the training data by adding the flipped versions of images. I use `StratifiedShuffleSplit` to ensure even ratio of vehicles and non-vehicles data in the training set.
 
-I train three classifiers with three different sliding window sizes:
+I fit three classifiers with three different sliding window sizes:
 
 |Name|Pixels Per Cell|Cells Per Window| Total Window Size|
 |-|-|-|-|
@@ -135,7 +136,7 @@ By now the Heat Map should look like that:
 
 ![heatmap before][heat_pre]
 
-To filter out some of the noise I use thresholding. Also I remove all bounding boxes with areas smaller than a threshold and ignoring the false positives.
+To filter out some of the noise I use thresholding. Also I remove all bounding boxes with areas smaller than a threshold and ignore the false positives.
 
 Now the Heat Map look more like that:
 
